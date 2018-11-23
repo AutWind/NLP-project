@@ -49,12 +49,22 @@ class Seq2SeqModel(object):
 
         return outputs, final_state
 
+    def process_decoder_input(self, targets, target_char_to_int, config):
+        '''
+        补充<GO>，并移除最后一个字符
+        '''
+        # cut掉最后一个字符
+        ending = tf.strided_slice(targets, [0, 0], [config.batch_size, -1], [1, 1])
+        decoder_input = tf.concat([tf.fill([config.batch_size, 1], target_char_to_int['<GO>']), ending], 1)
+
+        return decoder_input
+
     def decoder(self, config, encoder_state, target_char_to_int, is_infer):
 
         decoder_vocab_size = len(target_char_to_int)
-
+        targets = self.process_decoder_input(self.targets, target_char_to_int, config)
         embeddings = tf.Variable(tf.random_uniform([decoder_vocab_size, config.model.decoder_embedding_size]))
-        decoder_embed_input = tf.nn.embedding_lookup(embeddings, self.targets)
+        decoder_embed_input = tf.nn.embedding_lookup(embeddings, targets)
 
         def get_lstm_cell(hidden_size):
             lstm_cell = tf.nn.rnn_cell.LSTMCell(hidden_size, state_is_tuple=True,
