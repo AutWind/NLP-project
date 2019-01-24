@@ -3,7 +3,7 @@ import tensorflow as tf
 
 
 class BiLSTMCRF(object):
-    def __init__(self, embedded_chars, hidden_sizes, dropout_rate, num_labels,
+    def __init__(self, embedded_chars, hidden_sizes, layers, dropout_rate, num_labels,
                  max_len, labels, sequence_lens, is_training):
         """
         构建Bi-LSTM + CRF结构
@@ -17,6 +17,7 @@ class BiLSTMCRF(object):
         :param is_training:
         """
         self.hidden_sizes = hidden_sizes
+        self.layers = layers
         self.dropout_rate = dropout_rate
         self.embedded_chars = embedded_chars
         self.max_len = max_len
@@ -33,6 +34,9 @@ class BiLSTMCRF(object):
         定义Bi-LSTM层，支持实现多层
         :return:
         """
+        with tf.name_scope("embedding"):
+            self.embedded_chars = tf.nn.dropout(self.embedded_chars, keep_prob=self.dropout_rate)
+
         with tf.name_scope("Bi-LSTM"):
 
             for idx, hidden_size in enumerate(self.hidden_sizes):
@@ -69,8 +73,18 @@ class BiLSTMCRF(object):
         :param output_size:
         :return:
         """
+        with tf.name_scope("output_layers"):
+            for idx, layer in enumerate(self.layers):
+                with tf.variable_scope("output_layer" + str(idx)):
+                    fc_w = tf.get_variable("fc_w", shape=[output_size, layer],
+                                           initializer=tf.contrib.layers.xavier_initializer())
+                    fc_b = tf.get_variable("fc_b", shape=[layer], initializer=tf.zeros_initializer())
+                    output = tf.nn.dropout(tf.tanh(tf.nn.xw_plus_b(output, fc_w, fc_b)),
+                                           keep_prob=self.dropout_rate,
+                                           name="output" + str(idx))
+                    output_size = layer
 
-        with tf.variable_scope("output_layer"):
+        with tf.variable_scope("final_output_layer"):
             output_w = tf.get_variable(
                 "output_w",
                 shape=[output_size, self.num_labels],
