@@ -85,11 +85,11 @@ class Engine():
             sess = tf.Session(config=session_conf)
             with sess.as_default():
                 with tf.name_scope("train"):
-                    with tf.variable_scope("seq2seq"):
+                    with tf.variable_scope("WordErrorCorr"):
                         train_model = Seq2SeqModel(config, encoder_vocab_size, target_char_to_int, is_infer=False)
 
                 with tf.name_scope("infer"):
-                    with tf.variable_scope("seq2seq", reuse=True):
+                    with tf.variable_scope("WordErrorCorr", reuse=True):
                         infer_model = Seq2SeqModel(config, encoder_vocab_size, target_char_to_int, is_infer=True)
 
                 global_step = tf.Variable(0, name="global_step", trainable=False)
