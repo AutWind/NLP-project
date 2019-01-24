@@ -1,5 +1,5 @@
-### NLP project source code
+### NLP project
 ***
-#### 1. char-CNN 应用于文本分类
+#### 1. NER-BERT 基于bert预训练模型处理ner任务
 
-#### 2. text-CNN 应用于文本分类
+#### 2. WordErrorCorr 基于seq2seq结构的单词纠错任务
