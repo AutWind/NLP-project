@@ -112,6 +112,10 @@ flags.DEFINE_list(
     "support multi lstm layers, only add hidden_size into hidden_sizes list."
 )
 
+flags.DEFINE_list(
+    "layers", [128], "full connection layers"
+)
+
 flags.DEFINE_float("dropout_rate", 0.5, "dropout keep rate")
 
 
@@ -469,9 +473,9 @@ def create_model(bert_config, is_training, input_ids, input_mask, sequence_lens,
     tf.logging.info("bert embedding size: {}".format(embedding.get_shape()))
     max_seq_length = embedding.shape[1].value
 
-    blstm_crf = BiLSTMCRF(embedded_chars=embedding, hidden_sizes=FLAGS.hidden_sizes, dropout_rate=FLAGS.dropout_rate,
-                          num_labels=num_labels, max_len=max_seq_length, labels=label_ids, sequence_lens=sequence_lens,
-                          is_training=is_training)
+    blstm_crf = BiLSTMCRF(embedded_chars=embedding, hidden_sizes=FLAGS.hidden_sizes, layers=FLAGS.layers,
+                          dropout_rate=FLAGS.dropout_rate, num_labels=num_labels, max_len=max_seq_length,
+                          labels=label_ids, sequence_lens=sequence_lens, is_training=is_training)
 
     result = blstm_crf.construct_graph()
     return result
